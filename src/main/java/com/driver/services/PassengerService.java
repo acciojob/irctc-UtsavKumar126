@@ -17,14 +17,9 @@ public class PassengerService {
     public Integer addPassenger(Passenger passenger){
         //Add the passenger Object in the passengerDb and return the passegnerId that has been returned
 
-        Passenger passenger1=new Passenger();
-        passenger1.setName(passenger.getName());
-        passenger1.setAge(passenger.getAge());
-        passenger1.setBookedTickets(new ArrayList<>());
+        passengerRepository.save(passenger);
 
-        passengerRepository.save(passenger1);
-
-        return passenger1.getPassengerId();
+        return passenger.getPassengerId();
     }
 
 }

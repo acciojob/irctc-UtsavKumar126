@@ -16,6 +16,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class TrainService {
@@ -26,27 +27,25 @@ public class TrainService {
     List<Train>trains=new ArrayList<>();
 
     public Integer addTrain(AddTrainEntryDto trainEntryDto){
-
-        //Add the train to the trainRepository
-        List<Station>route=trainEntryDto.getStationRoute();
-        String reqRoute="";
-        for(Station station:route){
-            String station2=station.toString();
-            reqRoute+=station2+",";
-        }
-
-        Train train=new Train();
-        train.setRoute(reqRoute);
-        train.setBookedTickets(new ArrayList<>());
-        train.setDepartureTime(trainEntryDto.getDepartureTime());
-        train.setNoOfSeats(trainEntryDto.getNoOfSeats());
-        //and route String logic to be taken from the Problem statement.
-        //Save the train and return the trainId that is generated from the database.
-        trainRepository.save(train);
         //Avoid using the lombok library
-        trains.add(train);
+        Train train = new Train();
+        train.setNoOfSeats(trainEntryDto.getNoOfSeats());
 
-        return train.getTrainId();
+        List<Station> list = trainEntryDto.getStationRoute();
+        String route = "";
+
+        for(int i=0;i<list.size();i++){
+            if(i==list.size()-1)
+                route += list.get(i);
+            else
+                route += list.get(i) + ",";
+        }
+        train.setRoute(route);
+
+        train.setDepartureTime(trainEntryDto.getDepartureTime());
+        trains.add(train);
+        return trainRepository.save(train).getTrainId();
+
     }
 
     public Integer calculateAvailableSeats(SeatAvailabilityEntryDto seatAvailabilityEntryDto){
@@ -140,32 +139,25 @@ public class TrainService {
 
     public List<Integer> trainsBetweenAGivenTime(Station station, LocalTime startTime, LocalTime endTime){
 
-        //When you are at a particular station you need to find out the number of trains that will pass through a given station
-        List<Integer>trainIds=new ArrayList<>();
-        //between a particular time frame both start time and end time included.
+        List<Integer> TrainList = new ArrayList<>();
+        List<Train> trains = trainRepository.findAll();
+        for(Train t:trains){
+            String s = t.getRoute();
+            String[] ans = s.split(",");
+            for(int i=0;i<ans.length;i++){
+                if(Objects.equals(ans[i], String.valueOf(station))){
+                    int startTimeInMin = (startTime.getHour() * 60) + startTime.getMinute();
+                    int lastTimeInMin = (endTime.getHour() * 60) + endTime.getMinute();
 
-        for(Train train:trains){
-            List<String>routes= List.of(train.getRoute().split(","));
-            int index=-1;
-            for(int i=0;i<routes.size();i++){
-                if(routes.get(i).equals(station.toString())){
-                    index=i;
-                    break;
+
+                    int departureTimeInMin = (t.getDepartureTime().getHour() * 60) + t.getDepartureTime().getMinute();
+                    int reachingTimeInMin  = departureTimeInMin + (i * 60);
+                    if(reachingTimeInMin>=startTimeInMin && reachingTimeInMin<=lastTimeInMin)
+                        TrainList.add(t.getTrainId());
                 }
             }
-            if(index>=0){
-                LocalTime time=train.getDepartureTime().plusHours(index);
-
-                if(time.isAfter(startTime)&&time.isBefore(endTime)){
-                    trainIds.add(train.getTrainId());
-                }
-            }
-
         }
-        //You can assume that the date change doesn't need to be done ie the travel will certainly happen with the same date (More details
-        //in problem statement)
-        //You can also assume the seconds and milli seconds value will be 0 in a LocalTime format.
-        return trainIds;
+        return TrainList;
     }
 
 }

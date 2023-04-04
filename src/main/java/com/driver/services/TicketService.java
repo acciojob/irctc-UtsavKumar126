@@ -41,16 +41,27 @@ public class TicketService {
             throw new Exception("Less tickets are available");
         }
 
-        List<String>stations= List.of(train.getRoute().split(","));
-
-        if(!stations.contains(bookTicketEntryDto.getFromStation())||!stations.contains(bookTicketEntryDto.getToStation())){
-            throw new Exception("Invalid stations");
-        }
-
+        String stations[]=train.getRoute().split(",");
         List<Passenger>passengerList=new ArrayList<>();
         List<Integer>ids=bookTicketEntryDto.getPassengerIds();
         for(int id: ids){
             passengerList.add(passengerRepository.findById(id).get());
+        }
+        int x=-1,y=-1;
+        for(int i=0;i<stations.length;i++){
+            if(bookTicketEntryDto.getFromStation().toString().equals(stations[i])){
+                x=i;
+                break;
+            }
+        }
+        for(int i=0;i<stations.length;i++){
+            if(bookTicketEntryDto.getToStation().toString().equals(stations[i])){
+                y=i;
+                break;
+            }
+        }
+        if(x==-1||y==-1||y-x<0){
+            throw new Exception("Invalid stations");
         }
         Ticket ticket=new Ticket();
         ticket.setPassengersList(passengerList);
@@ -58,20 +69,6 @@ public class TicketService {
         ticket.setToStation(bookTicketEntryDto.getToStation());
 
         int fair=0;
-        int x=0,y=0;
-        for(int i=0;i<stations.size();i++){
-            if(bookTicketEntryDto.getFromStation().toString().equals(stations.get(i))){
-                x=i;
-                break;
-            }
-        }
-        for(int i=0;i<stations.size();i++){
-            if(bookTicketEntryDto.getToStation().toString().equals(stations.get(i))){
-                y=i;
-                break;
-            }
-        }
-
         fair=bookTicketEntryDto.getNoOfSeats()*(y-x)*300;
 
         ticket.setTotalFare(fair);
