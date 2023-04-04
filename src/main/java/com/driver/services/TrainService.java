@@ -45,6 +45,7 @@ public class TrainService {
         trainRepository.save(train);
         //Avoid using the lombok library
         trains.add(train);
+
         return train.getTrainId();
     }
 
@@ -155,7 +156,7 @@ public class TrainService {
             if(index>=0){
                 LocalTime time=train.getDepartureTime().plusHours(index);
 
-                if((time.equals(startTime)|| time.isAfter(startTime))&&(time.isBefore(endTime)||time.equals(endTime))){
+                if(time.isAfter(startTime)&&time.isBefore(endTime)){
                     trainIds.add(train.getTrainId());
                 }
             }

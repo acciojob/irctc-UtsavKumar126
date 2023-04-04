@@ -48,7 +48,8 @@ public class TicketService {
         }
 
         List<Passenger>passengerList=new ArrayList<>();
-        for(int id: bookTicketEntryDto.getPassengerIds()){
+        List<Integer>ids=bookTicketEntryDto.getPassengerIds();
+        for(int id: ids){
             passengerList.add(passengerRepository.findById(id).get());
         }
         Ticket ticket=new Ticket();
