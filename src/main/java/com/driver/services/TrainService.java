@@ -68,7 +68,11 @@ public class TrainService {
         if(!map.containsKey(seatAvailabilityEntryDto.getFromStation().toString())||!map.containsKey(seatAvailabilityEntryDto.getToStation().toString())){
             return 0;
         }
-        int count=train.getNoOfSeats()-ticketList.size();
+        int booked=0;
+        for(Ticket ticket:ticketList){
+            booked+=ticket.getPassengersList().size();
+        }
+        int count=train.getNoOfSeats()-booked;
         for(Ticket t:ticketList){
             String fromStation=t.getFromStation().toString();
             String toStation=t.getToStation().toString();
